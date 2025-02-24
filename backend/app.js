@@ -1,45 +1,29 @@
-const express = require("express");
+const express = require('express');
+const ErrorHandler = require("./middleware/error");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
 
 const app = express();
 
-const ErrorHandler = require("./middleware/error");
+// Config
+if (process.env.NODE_ENV !== 'PRODUCTION') {
+    dotenv.config({ path: "backend/config/.env" });
+}
 
-const cookieParser = require("cookie-parser");
-
-// const bodyParser = require("body-parser");
-
-const cors=require('cors')
 app.use(express.json());
-
-app.use(express.urlencoded({extended:true}))
-
 app.use(cookieParser());
+app.use("/", express.static("uploads"));
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
-app.use("/",express.static("uploads"));
-
-// app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
-
-app.use(cors())
-
-// config
-
-if (process.env.NODE_ENV !== "PRODUCTION") {
-
-require("dotenv").config({
-
-path: "backend/config/.env",
-
-});
-};
-
-//import Routes
-
+// Import Routes
 const user = require("./controller/user");
+const product = require("./controller/product");  // Added product route
 
 app.use("/api/v2/user", user);
+app.use("/api/v2/product", product);  // Added product route
 
-// it's for ErrorHandling
-
+// Error Handling Middleware
 app.use(ErrorHandler);
 
 module.exports = app;
