@@ -10,11 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.6",
+    "@tailwindcss/postcss": "^4.0.12",
+    "@tailwindcss/vite": "^4.0.7",
+    "autoprefixer": "^10.4.21",
+    "axios": "^1.7.9",
+    "country-state-city": "^3.2.1",
+    "postcss": "^8.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.4.0",
-    "tailwindcss": "^4.0.6"
+    "react-lottie": "^1.2.10",
+    "react-router-dom": "^7.1.5",
+    "tailwindcss": "^4.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -26,6 +33,6 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
-    "vite": "^6.0.11"
+    "vite": "^6.0.5"
   }
 }
