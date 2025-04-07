@@ -1,92 +1,163 @@
-const express = require('express');
+const express = require("express");
+const path = require("path");
+const fs =require("fs");
+const User = require("../model/user");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../model/user.js');
-require('dotenv').config();
+const { upload } = require("../multer");
+const ErrorHandler = require("../utils/ErrorHandler");
+const catchAsyncErrors = require("../middleware/catchAsyncErrors");
+const bcrypt =require("bcryptjs");
+require("dotenv").config();
 
-// Test route
-router.get('/', (req, res) => {
-    return res.send("Hello World");
-});
 
-// User signup route
-router.post('/signup', async (req, res) => {
-    const { name, email, password } = req.body;
+// create user
+router.post("/create-user", upload.single("file"), catchAsyncErrors(async (req, res, next) => {
+  console.log("create user");
+  const { name, email, password } = req.body;
 
-    try {
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+  const userEmail = await User.findOne({ email });
+
+  if (userEmail) {
+    if(req.file){
+        const filepath = path.join(__dirname,"../uploads",req.file.filename);
+        try{
+            fs.unlinkSync(filepath);
         }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Save user
-        const newUser = new User({ name, email, password: hashedPassword });
-        await newUser.save();
-
-        res.status(201).json({ message: 'User created successfully' });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+        catch(err){
+            console.log("Error removing file:",err);
+            return res.status(500).json({message: "Error removing file"});
+        }
     }
-});
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
 
-        // Check if user exists
-        const existingUser = await User.findOne({ email });
-        if (!existingUser) {
-            return res.status(400).send('User not found');
-        }
+    return next(new ErrorHandler("User already exists",400));
 
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, existingUser.password);
-        if (!isMatch) {
-            return res.status(403).send('Invalid credentials');
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-            { userId: existingUser._id, email: existingUser.email },
-            'yourSecretKey', // Change this to a secure secret key
-            { expiresIn: '1h' }
-        );
-
-        return res.status(200).json({ message: 'Login successful', token });
-    } catch (err) {
-        console.log('Error in login:', err);
-        return res.status(500).send('Server Error');
     }
-});
+    let fileUrl = "";
 
-// User login route
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        // Check if user exists
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
-
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        res.json({ message: 'Login successful', token });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if(req.file){
+        fileUrl=path.join("uploads",req.file.filename);
     }
-});
 
-module.exports = router;
+    const hashedPassword = await bcrypt.hash(password,10);
+    console.log("At Create ","Password:", password,"Hash: ",hashedPassword);
+    
+    const user = await User.create({
+        name,
+        email,
+        password,
+        avatar: {
+            public_id:req.file?.filename || "",
+            url: fileUrl,
+        },
+    });
+console.log(user);
+
+res.status(201).json({ success:true,user});
+}));
+
+
+router.post("/login-user",catchAsyncErrors(async(req, res, next)=>{
+    console.log("Logging...");
+    let{email,password} = req.body;
+    email = email
+    password = password;
+
+    if(!email || !password){
+        return next(new ErrorHandler("Please provide email and password",400));
+    }
+    const user_authen = await User.findOne({email}).select("+password");
+    console.log(user_authen);
+    if(!user_authen){
+        console.log("No user found")
+        return next(new ErrorHandler("Invalid email or password , No such E-mail found",401));
+    }
+    const isPasswordMatched = await bcrypt.compare(password, user_authen.password);
+    console.log("Password Matched Result: ",isPasswordMatched);
+    console.log("At Auth - password", password, "Hash: ", user_authen.password);
+    if(!isPasswordMatched){
+        console.log("Password not matched")
+        return next(new ErrorHandler("Authencation failed,Invalid password",401));
+
+    }
+    res.status(200).json({
+        success:true,
+        message:"Login successful",
+        user:{
+            id:user_authen.id,
+            email:user_authen.email,
+            name:user_authen.name,
+        },
+    });
+
+}));
+
+router.get("/profile", catchAsyncErrors( async (req, res, next)=>{
+    const {email} = req.query
+
+    if (!email) {
+        return next(new ErrorHandler("Please provide email" , 400));
+    }
+    const user = await User.findOne({email});
+    if(!user){
+        return next (new ErrorHandler("User not found", 400))
+    }
+    res.status(200).json({
+        success:true,
+        user:{
+            name:user.name,
+            email:user.email,
+            phone:user.phone,
+            avatarURL:user.avatar.url
+        },
+        addresses: user.addresses
+    });
+}))
+
+// Add address
+router.post('/add-address', catchAsyncErrors(async (req, res, next) => {
+    const { email, country, city, address1, address2, zipcode, addresstype } = req.body;
+
+    if (!email) {
+        return next(new ErrorHandler("Please provide an email", 400));
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+    }
+
+    user.addresses.push({
+        country,
+        city,
+        address1,
+        address2,
+        zipCode: zipcode,
+        addressType: addresstype
+    });
+
+    await user.save();
+
+    res.status(201).json({
+        success: true,
+        message: "Address added successfully",
+        addresses: user.addresses
+    });
+}));
+
+router.get("/addresses", catchAsyncErrors(async (req, res, next) => {
+    const { email } = req.query;
+
+    if (!email) {
+        return next(new ErrorHandler("Please provide an email", 400));
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+    }
+    res.status(200).json({
+        success: true,
+        addresses: user.addresses
+    });
+}))
+
+module.exports=router;

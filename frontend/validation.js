@@ -15,7 +15,7 @@ const ValidationFormObject = {
       maxLength: 128,
       hasUpperCase: /[A-Z]/,
       hasLowerCase: /[a-z]/,
-      hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, // Fixed unnecessary escapes
+      hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, 
     };
     if (password.length < passwordRegex.minLength) {
       return 'Password Should be more than or equal to 8 characters';
@@ -49,4 +49,5 @@ const ValidationFormObject = {
     return true;
   },
 };
+
 export default ValidationFormObject;

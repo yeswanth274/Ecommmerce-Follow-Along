@@ -1,68 +1,48 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const Product = require('../model/product');
-const User = require('./user');
+const mongoose = require("mongoose")
 
-// Import the updated multer config
-const { pupload } = require("../middleware/multer");
-
-const router = express.Router();
-
-const validateProductData = (data) => {
-    const errors = [];
-
-    if (!data.name) errors.push('Product name is required');
-    if (!data.description) errors.push('Product description is required');
-    if (!data.category) errors.push('Product category is required');
-    if (!data.price || isNaN(data.price) || data.price <= 0) errors.push('Valid product price is required');
-    if (!data.stock || isNaN(data.stock) || data.stock < 0) errors.push('Valid product stock is required');
-    if (!data.email) errors.push('Email is required');
-
-    return errors;
-};
-
-// Create product route
-router.post('/create-product', pupload.array('images', 10), async (req, res) => {
-    console.log("Received request to create product");
-    const { name, description, category, tags, price, stock, email } = req.body;
-    const images = req.files.map((file) => file.path); // Get file paths
-
-    const validationErrors = validateProductData({ name, description, category, price, stock, email });
-    if (validationErrors.length > 0) {
-        return res.status(400).json({ errors: validationErrors });
-    }
-
-    if (images.length === 0) {
-        return res.status(400).json({ error: 'At least one image is required' });
-    }
-
-    try {
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ error: 'Email does not exist in the users database' });
+const productSchema = new mongoose.Schema(
+    {
+        name:{
+            type: String,
+            required: true
+        },
+        description:{
+            type: String,
+            required: [true, "Please provide the description of the product"]
+        },
+        category:{
+            type: String,
+            required: [true, "Please provide the product category"]
+        },
+        tags:{
+            type: [String],
+            default:[],
+        },
+        price:{
+            type: Number,
+            required: [true, "Please provide product price"]
+        },
+        stock:{
+            type: Number,
+            required: [true, "Please provide the product stock"]
+        },
+        images:{
+            type: [String],
+            required: [true, "Please provide some product images"]
+        },
+        email:{
+            type: String,
+            required: [true, "Please provide an email"],
+            match:[/.+@.+\..+/, "Please provide a valid email"]
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
         }
-
-        const newProduct = new Product({
-            name,
-            description,
-            category,
-            tags,
-            price,
-            stock,
-            email,
-            images,
-        });
-
-        await newProduct.save();
-
-        res.status(201).json({
-            message: 'Product created successfully',
-            product: newProduct,
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error. Could not create product.' });
+    },
+    {
+        timestamps: true
     }
-});
+);
 
-module.exports = router;
+module.exports = mongoose.model("Product", productSchema);
