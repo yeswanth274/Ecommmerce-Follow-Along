@@ -90,44 +90,44 @@ Implemented an edit form with autofilled previous data for seamless updates.
 Learning Goals:
 Developed an API endpoint to delete products from the database.
 Ensured dynamic removal of products from both the frontend and backend.
-Milestone 15 Responsive Navbar Added
+## Milestone 15 Responsive Navbar Added
 A responsive Navbar component has been created with links to all pages ensuring smooth navigation across the application. The component is designed for reusability across multiple pages and is fully responsive.
 
-Milestone 16 Product Detail Page Added
+## Milestone 16 Product Detail Page Added
 A Product Detail Page has been added providing in-depth information about each product. The page includes links to the Buy and Cart pages a responsive design and a section displaying similar products at the bottom.
 
-Milestone 17 Cart Functionality in Node.js and MongoDB
+## Milestone 17 Cart Functionality in Node.js and MongoDB
 This milestone adds cart functionality allowing users to create a cart add products retrieve cart details and remove products from their cart.
 
-Milestone 18: Fetch Cart Items by Email
+## Milestone 18: Fetch Cart Items by Email
 Added a backend API to retrieve cart products using the user's email, returning detailed product information for display.
 
-Milestone 19: Cart System Implementation
+## Milestone 19: Cart System Implementation
 Developed a dynamic cart page with frontend and backend functionality. Users can view products, adjust quantities with + and - buttons, and backend endpoints manage updates efficiently.
 
-Milestone 20: Profile Page & User Data API
+## Milestone 20: Profile Page & User Data API
 Created a profile page displaying user details (photo, name, email, address) with an option to add addresses. A backend API fetches and manages user data, ensuring a responsive and user-friendly experience. Milestone 21 Developed a frontend form to collect user inputs for country, city, address line 1, address line 2, zip code, and address type, along with displaying the address if available.
 
-Milestone 22
+## Milestone 22
 Created a backend endpoint to receive address details from the frontend and store them within the user's profile in the database.
 
-Milestone 23
+## Milestone 23
 Implemented a page allowing users to select an address during the cart checkout process.
 
-Milestone 24
+## Milestone 24
 Developed a confirmation page to review order details before finalizing the checkout.
 
-Milestone 25
+## Milestone 25
 Built a backend endpoint to process order placements.
 
-Milestone 26
+## Milestone 26
 Created an endpoint that retrieves a user’s orders based on their email.
 
-Milestone 27
+## Milestone 27
 Designed the "My Orders" page for smooth order tracking and management.
 
-Milestone 28
+## Milestone 28
 Added functionality to allow users to cancel their orders.
 
-Milestone 29
+## Milestone 29
 Integrated PayPal as a payment gateway, giving users the option to choose between Cash on Delivery (COD) and online payment via PayPal.
